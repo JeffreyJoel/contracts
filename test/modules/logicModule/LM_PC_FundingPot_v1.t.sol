@@ -184,11 +184,34 @@ contract LM_PC_FundingPot_v1Test is ModuleTest {
         fundingPot.setFundingPotAdmin(newAdmin);
 
         assertEq(fundingPot.getFundingPotAdmin(), newAdmin);
+        assertEq(
+            _authorizer.hasRole(
+                _authorizer.generateRoleId(
+                    address(fundingPot), fundingPot.FUNDING_POT_ADMIN_ROLE()
+                ),
+                newAdmin
+            ),
+            true
+        );
     }
 
     function testFuzz_RevokeFundingPotAdmin() public {
+        address newAdmin = makeAddr("newAdmin");
+
         vm.prank(orchestratorAdmin);
+        fundingPot.setFundingPotAdmin(newAdmin);
+
         fundingPot.revokeFundingPotAdmin();
+
+        assertEq(
+            _authorizer.hasRole(
+                _authorizer.generateRoleId(
+                    address(fundingPot), fundingPot.FUNDING_POT_ADMIN_ROLE()
+                ),
+                newAdmin
+            ),
+            false
+        );
 
         assertEq(fundingPot.getFundingPotAdmin(), address(0));
     }

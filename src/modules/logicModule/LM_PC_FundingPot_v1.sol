@@ -88,6 +88,9 @@ contract LM_PC_FundingPot_v1 is
     /// @dev The role that allows processing deposits
     bytes32 public constant DEPOSIT_ADMIN_ROLE = "DEPOSIT_ADMIN";
 
+    /// @dev	Role for the funding pot admin.
+    bytes32 public constant FUNDING_POT_ADMIN_ROLE = "FUNDING_POT_ADMIN";
+
     /// @notice    Mapping of user addresses to their deposited token amounts.
     mapping(address user => uint amount) internal _depositedAmounts;
 
@@ -181,14 +184,21 @@ contract LM_PC_FundingPot_v1 is
         external
         onlyOrchestratorAdmin
     {
-        if (newAdmin_ == address(0) || newAdmin_ == _msgSender()) {
+        if (newAdmin_ == address(0)) {
             revert Module__LM_PC_FundingPot_InvalidFundingPotAdmin();
         }
+
+        __Module_orchestrator.authorizer().grantRoleFromModule(
+            FUNDING_POT_ADMIN_ROLE, newAdmin_
+        );
         fundingPotAdmin = newAdmin_;
     }
 
     /// @inheritdoc ILM_PC_FundingPot_v1
     function revokeFundingPotAdmin() external onlyOrchestratorAdmin {
+        __Module_orchestrator.authorizer().revokeRoleFromModule(
+            FUNDING_POT_ADMIN_ROLE, fundingPotAdmin
+        );
         fundingPotAdmin = address(0);
     }
 
